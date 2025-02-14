@@ -1,0 +1,76 @@
+import requests
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Replace with your OpenWeatherMap API key
+API_KEY = "YOUR_API_KEY"
+BASE_URL = "https://api.openweathermap.org/data/2.5/weather?"
+
+# Function to fetch weather data for a given city
+def get_weather_data(city):
+    url = f"{BASE_URL}q={city}&appid={API_KEY}&units=metric"  # 'metric' for Celsius
+    response = requests.get(url)
+
+    # Check if the response was successful (HTTP status code 200)
+    if response.status_code == 200:
+        data = response.json()
+        weather_info = {
+            "City": city,
+            "Temperature": data["main"]["temp"],
+            "Humidity": data["main"]["humidity"],
+            "Pressure": data["main"]["pressure"],
+            "Weather": data["weather"][0]["description"],
+            "Wind Speed": data["wind"]["speed"]
+        }
+        return weather_info
+    else:
+        print("Error fetching data.")
+        return None
+
+# Function to visualize the weather data using Matplotlib and Seaborn
+def create_weather_dashboard(weather_data):
+    # Create a DataFrame from the weather data
+    df = pd.DataFrame([weather_data])
+
+    # Set the style of the visualizations
+    sns.set(style="whitegrid")
+
+    # Create the dashboard with multiple plots
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+
+    # Plot Temperature
+    sns.barplot(x="City", y="Temperature", data=df, ax=axes[0, 0], palette="coolwarm")
+    axes[0, 0].set_title("Temperature (°C)")
+
+    # Plot Humidity
+    sns.barplot(x="City", y="Humidity", data=df, ax=axes[0, 1], palette="Blues")
+    axes[0, 1].set_title("Humidity (%)")
+
+    # Plot Pressure
+    sns.barplot(x="City", y="Pressure", data=df, ax=axes[1, 0], palette="Greens")
+    axes[1, 0].set_title("Pressure (hPa)")
+
+    # Plot Wind Speed
+    sns.barplot(x="City", y="Wind Speed", data=df, ax=axes[1, 1], palette="Purples")
+    axes[1, 1].set_title("Wind Speed (m/s)")
+
+    # Layout adjustments
+    plt.tight_layout()
+    plt.show()
+
+# Main script to fetch weather data and display the dashboard
+def main():
+    city = input("Enter the city name: ")  # Allow user to input city
+    weather_data = get_weather_data(city)
+
+    if weather_data:
+        print(f"Weather data for {city}:")
+        print(weather_data)
+        create_weather_dashboard(weather_data)
+    else:
+        print("Failed to fetch data. Please try again.")
+
+# Run the script
+if __name__ == "__main__":
+    main()
